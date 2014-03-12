@@ -5,40 +5,51 @@
          close/1,
          debug_on/1,
          debug_off/1,
-         version/1,
          read/1,
          continous/1,
+         version/1,
          reset/1,
          command/2,
          recv/0,
          recv/1]).
 
--define(TIMEOUT, 10000).
+-include("atlas.hrl").
 
-%% @doc Start a new process that is connected to the serial port.
-new() -> serial:start([{speed, 38400}, {open, "/dev/ttyAMA0"}]).
+%% @doc Start a new serial port process at the default port.
+new() -> 
+  new(?DEFAULT_PORT).
+
+%% @doc Start a new serial port.
+new(SerialPort) ->
+  serial:start([{speed, 38400}, {open, SerialPort}]).
 
 %% @doc Close the serial port process.
-close(Port) -> Port ! stop.
+close(Port) ->
+  Port ! stop.
 
 %% @doc Send debug on command
-debug_on(Port) -> command(Port, "L1").
+debug_on(Port) ->
+  command(Port, ?DEBUG_ON).
 
 %% @doc Send debug off command
-debug_off(Port) -> command(Port, "L0").
+debug_off(Port) ->
+  command(Port, ?DEBUG_OFF).
 
 %% @doc Send read command
-read(Port) -> command(Port, "R").
+read(Port) ->
+  command(Port, ?READ).
 
 %% @doc Send continous read command
-continous(Port) -> command(Port, "C").
+continous(Port) ->
+  command(Port, ?CONTINOUS).
 
-%% @doc Send reset command
-reset(Port) -> command(Port, "X").
+%% @doc Send a reset command
+reset(Port) ->
+  command(Port, ?RESET).
 
 %% @doc Return the version of the circuit.
 version(Port) ->
-  command(Port, "I"),
+  command(Port, ?VERSION),
   case recv() of
     {ok, VersionData} -> {ok, parse_versiondata(VersionData)};
     Err               -> Err
@@ -53,7 +64,7 @@ command(Port, Command) ->
 recv(Timeout) ->
   receive
     {data, Bytes} ->
-      [Response, <<>>] = binary:part(Bytes, 0, byte_size(Bytes)-1),
+      [Response, <<>>] = binary:split(Bytes, <<"\r">>),
       {ok, Response}
   after Timeout   ->
     {error, timeout}
@@ -84,5 +95,3 @@ parse_version(<<"V", Version/binary>>) ->
 parse_date(Date) ->
   [Month, Year] = binary:split(Date, <<".">>),
   {Year + 2000, Month, 1}.
-
-
