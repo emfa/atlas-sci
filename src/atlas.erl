@@ -52,8 +52,11 @@ command(Port, Command) ->
 %%      Or if no response is received return a timeout error.
 recv(Timeout) ->
   receive
-    {data, Bytes} -> {ok, binary:part(Bytes, 0, byte_size(Bytes)-1)}
-  after Timeout   -> {error, timeout}
+    {data, Bytes} ->
+      [Response, <<>>] = binary:part(Bytes, 0, byte_size(Bytes)-1),
+      {ok, Response}
+  after Timeout   ->
+    {error, timeout}
   end.
 
 %% @doc Same as recv/1 but use a default value for timeout.

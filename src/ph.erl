@@ -3,7 +3,10 @@
 -export([read/1,
          read_temp_dependent/2,
          recv_measurement/0,
-         reset/1]).
+         reset/1,
+         calibrate_ph4/1,
+         calibrate_ph7/1,
+         calibrate_ph10/1]).
 
 -define(TIMEOUT, 10000).
 
@@ -28,6 +31,18 @@ read_temp_dependent(Port, Temp) when Temp < 100 ->
   atlas:command(Port, TempStr),
   recv_measurement().
 
+%% @doc Calibrate to ph4
+calibrate_ph4(Port) ->
+  atlas:command(Port, "F").
+
+%% @doc Calibrate to ph7
+calibrate_ph7(Port) ->
+  atlas:command(Port, "S").
+
+%% @doc Calibrate to ph10
+calibrate_ph10(Port) ->
+  atlas:command(Port, "T").
+
 %% @doc Return the circuit to factory settings.
 reset(Port) ->
   atlas:reset(Port),  
@@ -35,4 +50,5 @@ reset(Port) ->
     {error, timeout}  -> {error, timeout};
     {ok, <<"reset">>} -> ok
   end. 
+
 
