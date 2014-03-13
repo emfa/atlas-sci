@@ -83,9 +83,9 @@ recv() ->
 
 %% @doc Parse version data.
 %%      Returns a triple: {Circuit, Version, Date}
-parse_versiondata(VersionData) ->
-  [CData, VData, DData] = binary:split(VersionData, <<",">>, [global]),
-  {parse_circuit(CData), parse_version(VData), parse_date(DData)}.
+parse_versiondata(VersionBin) ->
+  [CBin, VBin, DBin] = binary:split(VersionBin, <<",">>, [global]),
+  {parse_circuit(CBin), parse_version(VBin), parse_date(DBin)}.
 
 %% @doc Parse circuit identifier
 parse_circuit(<<"P">>) -> ph;
@@ -95,10 +95,13 @@ parse_circuit(<<"O">>) -> orp.
 
 %% @doc Parse version
 parse_version(<<"V", Version/binary>>) ->
-  [Major, Minor] = binary:split(Version, <<".">>),
-  {erlang:binary_to_integer(Major), erlang:binary_to_integer(Minor)}.
+  [MajorBin, MinorBin] = binary:split(Version, <<".">>),
+  {erlang:binary_to_integer(MajorBin), erlang:binary_to_integer(MinorBin)}.
 
 %% @doc Parse date
-parse_date(Date) ->
-  [Month, Year] = binary:split(Date, <<"/">>),
-  {Year + 2000, Month, 1}.
+parse_date(DateBin) ->
+  [MonthBin, YearBin] = binary:split(DateBin, <<"/">>),
+  Year  = erlang:binary_to_integer(YearBin) + 2000,
+  Month = erlang:binary_to_integer(MonthBin),
+  Day   = 1,
+  {Year, Month, Day}.
