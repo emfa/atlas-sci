@@ -100,5 +100,5 @@ parse_version(<<"V", Version/binary>>) ->
 
 %% @doc Parse date
 parse_date(Date) ->
-  [Month, Year] = binary:split(Date, <<".">>),
+  [Month, Year] = binary:split(Date, <<"/">>),
   {Year + 2000, Month, 1}.
