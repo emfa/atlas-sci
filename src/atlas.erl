@@ -7,6 +7,7 @@
          debug_off/1,
          read/1,
          continous/1,
+         cancel/1,
          version/1,
          reset/1,
          command/2,
@@ -21,7 +22,7 @@ new() ->
 
 %% @doc Start a new serial port.
 new(SerialPort) ->
-  serial:start([{speed, 38400}, {open, SerialPort}]).
+  serial:start([{speed, 38400}, {open, SerialPort}, {send, <<"\r">>}]).
 
 %% @doc Close the serial port process.
 close(Port) ->
@@ -42,6 +43,10 @@ read(Port) ->
 %% @doc Send continous read command
 continous(Port) ->
   command(Port, ?CONTINOUS).
+
+%% @doc Send a cancel command
+cancel(Port) ->
+  command(Port, ?CANCEL).
 
 %% @doc Send a reset command
 reset(Port) ->
