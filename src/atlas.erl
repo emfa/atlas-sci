@@ -12,7 +12,7 @@
          reset/1,
          command/2,
          recv/0,
-         recv/1]).
+         recv/2]).
 
 -include("atlas.hrl").
 
@@ -66,18 +66,20 @@ command(Port, Command) ->
 
 %% @doc Receive a response from a circuit, remove the line feed.
 %%      Or if no response is received return a timeout error.
-recv(Timeout) ->
+recv(Timeout, Data) ->
   receive
     {data, Bytes} ->
-      [Response, <<>>] = binary:split(Bytes, <<"\r">>),
-      {ok, Response}
+      case binary:split(<<Data/binary, Bytes/binary>>, <<"\r">>) of
+        [Response, <<>>] -> {ok, Response};
+        [_]              -> recv(Timeout, <<Data/binary, Bytes/binary>>)
+      end
   after Timeout   ->
     {error, timeout}
   end.
 
 %% @doc Same as recv/1 but use a default value for timeout.
 recv() ->
-  recv(?TIMEOUT).
+  recv(?TIMEOUT, <<>>).
 
 %% @doc Parse version data.
 %%      Returns a triple: {Circuit, Version, Date}
